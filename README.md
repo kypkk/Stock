@@ -17,7 +17,7 @@ Stock Price Analysis Combine With Trading Strategy
 ___
 在考慮寫爬取財務報表
 ### 2.看盤系統(tkinter)
-!. 加入KD MA 線
+1. 加入KD MA 線
 用 plot.py 畫K線圖
 ### 3.策略制定
 目前考慮使用tensorflow
