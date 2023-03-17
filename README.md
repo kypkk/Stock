@@ -15,7 +15,7 @@ Stock Price Analysis Combine With Trading Strategy
 4. 將各檔資料抓出個別做歷史資料集
 ___
 在考慮寫爬取財務報表
-### 2.看盤系統
+### 2.看盤系統(tkinter)
 用 plot.py 畫K線圖
 ### 3.策略制定
 目前考慮使用tensorflow
