@@ -21,4 +21,6 @@ ___
 用 plot.py 畫K線圖
 ### 3.策略制定
 目前考慮使用tensorflow
-### 4.模擬交易(C)
+### 4.模擬交易(Cerabo)
+
+### 5.用linebot api 連結手機
