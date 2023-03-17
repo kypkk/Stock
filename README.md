@@ -13,10 +13,11 @@ Stock Price Analysis Combine With Trading Strategy
 | 0051       |   元大中型100         |  55.60      |     55.40   |   55.60     |    55.40    |    18,012       |    999,615           |   128     |   20230317       |
 3. 利用 save.py 存取進 phpmysql
 4. 將各檔資料抓出個別做歷史資料集
-5. 加入KD MA 線
+
 ___
 在考慮寫爬取財務報表
 ### 2.看盤系統(tkinter)
+!. 加入KD MA 線
 用 plot.py 畫K線圖
 ### 3.策略制定
 目前考慮使用tensorflow
