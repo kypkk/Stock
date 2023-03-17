@@ -1,6 +1,6 @@
 # Stock
 Stock Price Analysis Combine With Trading Strategy
-# 城式介紹
+# 程式介紹
 ## 步驟
 ### 1.資料整理
 1. 利用 crawler.py 爬取 台灣證券交易所/證券櫃買交易中心 之日成交資訊
