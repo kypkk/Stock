@@ -1,6 +1,5 @@
 from email import message
 from pickle import TRUE
-from re import S
 import requests
 import pandas as pd
 import io
@@ -10,10 +9,9 @@ import time
 from bs4 import BeautifulSoup
 import random
 import sqlite3
+import pymysql
 import numpy as np
-import threading
-from queue import Queue
-from package import save
+import save
 
 
 class DataException(Exception):
@@ -87,7 +85,18 @@ def existense(date):
 # crawl Tws stock
 
 
-def twscrawler(date_time):
+def twscrawler(date_time: datetime):
+    """_summary_
+
+    Args:
+        date_time (datatime): Days information want to get from tws
+
+    Raises:
+        DataException: Can't get data
+
+    Returns:
+        pandas.dataframe: daily data
+    """
     date_time = date_time.strftime("%Y%m%d")
     url = "https://www.twse.com.tw/exchangeReport/MI_INDEX?response=csv&date=" + \
         date_time+"&type=ALLBUT0999"
@@ -126,7 +135,18 @@ def twscrawler(date_time):
 # crawl TE Stock
 
 
-def tecrawler(time):
+def tecrawler(time: datetime):
+    """_summary_
+
+    Args:
+        time (datatime): Days information want to get from tws
+
+    Raises:
+        requests.exceptions.ConnectionError: can't get data
+
+    Returns:
+        pandas.dataframe: daily data
+    """
     y = int(time.strftime("%Y"))-1911
     date = time.strftime(str(y) + "/%m/%d")
     url = "https://www.tpex.org.tw/web/stock/aftertrading/otc_quotes_no1430/stk_wn1430_result.php?l=zh-tw&o=htm&d={}&se=EW&s=0,asc,0".format(
@@ -157,3 +177,8 @@ def tecrawler(time):
     df["Time"] = [x.strftime("%Y%m%d") for x in df["Time"]]
     df = df.dropna(thresh=2)
     return df
+
+
+if __name__ == '__main__':
+    a = twscrawler(datetime.datetime.now())
+    print(a)

@@ -37,7 +37,7 @@ def savebyname(n):
                 break
             df = pd.read_sql('select * from {}'.format(tab[a]), db)
             df = df.iloc[:, 1:]
-            total_df = total_df.append(df)
+            total_df = pd.concat([total_df, df], axis=0, ignore_index=True)
             a += 1
             b += 1
             # print(tab[a])
