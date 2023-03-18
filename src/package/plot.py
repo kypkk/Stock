@@ -33,9 +33,10 @@ def plot(name, df):
     mpf.plot(df, type='candle', style=s, title=str(name), volume=True)
 
 
-name, n = input("Id? Days?").split()
-df = get_dataframe(name, n)
-plot(name, df)
+if __name__ == '__main__':
+    name, n = input("Id? Days?").split()
+    df = get_dataframe(name, n)
+    plot(name, df)
 
 
 # fig = plt.figure(figsize=(24, 8))

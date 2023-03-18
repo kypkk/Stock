@@ -11,7 +11,7 @@ import random
 import sqlite3
 import pymysql
 import numpy as np
-import save
+import db
 
 
 class DataException(Exception):
@@ -20,8 +20,6 @@ class DataException(Exception):
 
 
 message = "No Data"
-dbname = os.getcwd() + '\\src\\resource\\daily_data.db'
-db2name = os.getcwd() + '\\src\\resource\\stock_data.db'
 
 
 def parse(n, **kwargs):
@@ -53,11 +51,11 @@ def parse(n, **kwargs):
     while i < n:
         x = random.randrange(2, 5)  # Hide from ip locker
         time.sleep(x)
-        if existense(now_date) == False:
+        if db.existense(now_date) == False:
             try:
                 df1 = twscrawler(now_date)
                 df2 = tecrawler(now_date)
-                save.savebydate(df1, df2, now_date)
+                db.savebydate(df1, df2, now_date)
                 i += 1
             except Exception as e:
                 print(e)
@@ -66,21 +64,8 @@ def parse(n, **kwargs):
             print("exist " + now_date.strftime("%Y%m%d"))
             i += 1
         now_date -= datetime.timedelta(days=1)
-    save.savebyname(n)
+    db.savebyname(n)
 
-# Need Modify: use Sql DB
-
-
-def existense(date):
-    str_date = date.strftime("%Y%m%d")
-    db = sqlite3.connect(dbname)
-    cursor = db.cursor()
-    cursor.execute("select name from sqlite_master where type='table'")
-    namelist = [x[0] for x in cursor.fetchall()]
-    if "tws_{}".format(str_date) in namelist:
-        return True
-    else:
-        return False
 
 # crawl Tws stock
 

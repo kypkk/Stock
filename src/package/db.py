@@ -1,6 +1,10 @@
 import sqlite3
 import pandas as pd
 import datetime
+import os
+
+dbname = os.getcwd() + '\\src\\resource\\daily_data.db'
+db2name = os.getcwd() + '\\src\\resource\\stock_data.db'
 
 
 def savebydate(df1, df2, now_date):
@@ -70,5 +74,20 @@ def check_dup():
         # print("check {}".format(name))
     dbsave.commit()
 
+# Need Modify: use Sql DB
 
-savebyname(10)
+
+def existense(date):
+    str_date = date.strftime("%Y%m%d")
+    db = sqlite3.connect(dbname)
+    cursor = db.cursor()
+    cursor.execute("select name from sqlite_master where type='table'")
+    namelist = [x[0] for x in cursor.fetchall()]
+    if "tws_{}".format(str_date) in namelist:
+        return True
+    else:
+        return False
+
+
+if __name__ == '__main__':
+    savebyname(10)
