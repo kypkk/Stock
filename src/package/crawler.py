@@ -12,6 +12,7 @@ import sqlite3
 import pymysql
 import numpy as np
 import db
+import json
 
 
 class DataException(Exception):
@@ -83,39 +84,36 @@ def twscrawler(date_time: datetime):
         pandas.dataframe: daily data
     """
     date_time = date_time.strftime("%Y%m%d")
-    url = "https://www.twse.com.tw/exchangeReport/MI_INDEX?response=csv&date=" + \
-        date_time+"&type=ALLBUT0999"
+    url = f"https://www.twse.com.tw/rwd/zh/afterTrading/MI_INDEX?date={date_time}&type=ALLBUT0999&response=json"
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.45 Safari/537.36"}
     print("getting tws_{} ...".format(date_time))
     response = requests.get(url, headers=headers)
-    data = response.text.splitlines()
-    e = False
-
-    for i, lines in enumerate(data):
-        if lines == '"證券代號","證券名稱","成交股數","成交筆數","成交金額","開盤價","最高價","最低價","收盤價","漲跌(+/-)","漲跌價差","最後揭示買價","最後揭示買量","最後揭示賣價","最後揭示賣量","本益比",':
-            index = i
-            e = True
-            break
-    if e == False:
-        raise DataException(message)
-    else:
-        pass
-    data_list = ''.join([x[:-1] + '\n' for x in data[index:]])
-    test_df = pd.read_csv(io.StringIO(data_list))
-
-    test_df = test_df[["證券代號", "證券名稱", "開盤價", "收盤價",
-                       "最高價", "最低價", "成交股數", "成交金額", "成交筆數"]]
-    test_df.columns = ["Id", "Name", "Open", "Close",
-                       "High", "Low", "Number", "Price", "Deal"]
-    test_df["Id"] = test_df["Id"].apply(
-        lambda x: x.replace('"', ''))
-    test_df["Id"] = test_df["Id"].apply(
-        lambda x: x.replace('=', ''))
-    test_df["Time"] = pd.to_datetime(date_time)
-    test_df["Time"] = [x.strftime("%Y%m%d") for x in test_df["Time"]]
-    test_df = test_df.dropna(thresh=2)
-    return test_df
+    table = json.loads(response.text)['tables']
+    field = table[8]['fields']
+    content = table[8]['data']
+    df_dict = dict()
+    for i in range(len(field)):
+        df_dict[field[i]] = [j[i] for j in content]
+    df = pd.DataFrame(df_dict)
+    df.columns = ["Stock code", "Stock name", "Volume of shares traded", "Number of transactions", "Transaction amount", "Opening price", "Highest price", "Lowest price", "Closing price",
+                  "Price change (+/-)", "Price difference", "Last displayed buying price", "Last displayed buying volume", "Last displayed selling price", "Last displayed selling volume", "PE ratio"]
+    diff = [BeautifulSoup(
+        x, features='lxml').string for x in df["Price difference"].to_list()]
+    change = [BeautifulSoup(
+        x, features='lxml').string for x in df["Price change (+/-)"].to_list()]
+    Price_difference = []
+    for i in range(len(diff)):
+        Price_difference.append(change[i] + diff[i])
+    df["Price difference"] = Price_difference
+    df.drop(columns=["Price change (+/-)"], inplace=True)
+    df = df[['Stock code', 'Stock name', 'Volume of shares traded',
+             'Number of transactions', 'Transaction amount', 'Opening price',
+             'Highest price', 'Lowest price', 'Closing price', 'Price difference',
+             'PE ratio']]
+    df.columns = ["ID", "NAME", "SHARES_VOLUMN", "TRANSACTIONS_NUMBER",
+                  "TRANSACTION_MONEY", "OPEN", "HIGH", "LOW", "CLOSE", "DIFF", "PE"]
+    return df
 
 # crawl TE Stock
 
@@ -165,5 +163,5 @@ def tecrawler(time: datetime):
 
 
 if __name__ == '__main__':
-    a = twscrawler(datetime.datetime.now())
+    a = twscrawler(datetime.datetime.now()-datetime.timedelta(2))
     print(a)
