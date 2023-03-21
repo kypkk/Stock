@@ -85,10 +85,13 @@ def twscrawler(date_time: datetime):
     """
     date_time = date_time.strftime("%Y%m%d")
     url = f"https://www.twse.com.tw/rwd/zh/afterTrading/MI_INDEX?date={date_time}&type=ALLBUT0999&response=json"
+    url2 = f"https://www.twse.com.tw/rwd/zh/afterTrading/BWIBBU_d?date={date_time}&selectType=ALL&response=json"
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.45 Safari/537.36"}
     print("getting tws_{} ...".format(date_time))
     response = requests.get(url, headers=headers)
+    response2 = requests.get(url2, headers=headers)
+    # 解析日成交表
     table = json.loads(response.text)['tables']
     field = table[8]['fields']
     content = table[8]['data']
@@ -111,8 +114,16 @@ def twscrawler(date_time: datetime):
              'Number of transactions', 'Transaction amount', 'Opening price',
              'Highest price', 'Lowest price', 'Closing price', 'Price difference',
              'PE ratio']]
-    df.columns = ["ID", "NAME", "SHARES_VOLUMN", "TRANSACTIONS_NUMBER",
-                  "TRANSACTION_MONEY", "OPEN", "HIGH", "LOW", "CLOSE", "DIFF", "PE"]
+    df.columns = ["ID", "NAME", "Volume of shares traded", "Number of transactions",
+                  "Transaction amount", "OPEN", "HIGH", "LOW", "CLOSE", "DIFF", "PE"]
+    # 解析其他資訊
+    table_json = json.loads(response2)
+    content = table_json["data"]
+    columns = ["ID", "NAME", "YIELD", "YEAR", "PE", "PB", "SEASON"]
+    content_dict = {}
+    for i in range(len(columns)):
+        content[columns[i]] = [j[i] for j in content]
+    df2 = pd.DataFrame(content_dict)
     return df
 
 # crawl TE Stock
@@ -134,10 +145,13 @@ def tecrawler(time: datetime):
     date = time.strftime(str(y) + "/%m/%d")
     url = "https://www.tpex.org.tw/web/stock/aftertrading/otc_quotes_no1430/stk_wn1430_result.php?l=zh-tw&o=htm&d={}&se=EW&s=0,asc,0".format(
         date)
+    url2 = f"https://www.tpex.org.tw/web/stock/aftertrading/peratio_analysis/pera_result.php?l=zh-tw&o=json&d={data}&c=&s=0,asc"
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.45 Safari/537.36"}
     print('getting te_{} ...'.format(time.strftime('%Y%m%d')))
     data = requests.get(url, headers=headers)
+    data2 = requests.get(url2, headers=headers)
+    # 解析日成交表
     a = data.content.decode('utf-8')
     b = BeautifulSoup(a, features="lxml")
     t = b.findAll('tr')
@@ -152,13 +166,23 @@ def tecrawler(time: datetime):
     df.columns = df.iloc[0]
     df = df[["代號", "名稱", "開盤", "收盤", "最高",
              "最低", "成交股數", "成交金額(元)", "成交筆數"]]
-    df.columns = ["Id", "Name", "Open", "Close",
-                  "High", "Low", "Number", "Price", "Deal"]
+    df.columns = ["ID", "NAME", "OPEN", "CLOSE",
+                  "HIGH", "LOW", "Volume of shares traded", "Transaction amount", "Number of transactions"]
     df = df[:-1]
     date = time.strftime("%Y%m%d")
     df["Time"] = pd.to_datetime(time)
     df["Time"] = [x.strftime("%Y%m%d") for x in df["Time"]]
     df = df.dropna(thresh=2)
+    # 解析其他資訊
+    response_data = json.loads(data2.text)
+    content = response_data["aaData"]
+    column_name = ["ID", "NAME", "PE", "DIVIDENED",
+                   "DIVIDENED_YEAR", "YIELD", "PB"]
+    content_dict = {}
+    for i in range(7):
+        content_dict[column_name[i]] = [j[i] for j in content]
+    df2 = pd.DataFrame(content_dict)
+
     return df
 
 
