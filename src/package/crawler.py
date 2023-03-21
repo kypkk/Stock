@@ -38,6 +38,8 @@ def parse(n, **kwargs):
     #         start_date = kwargs["start_date"]
     #     except:
     #         pass
+
+    # 設定抓取日期
     if "end_date" in kwargs.keys():
         now_date = kwargs["end_date"]
         if "start_date" in kwargs.keys():
@@ -53,9 +55,11 @@ def parse(n, **kwargs):
         x = random.randrange(2, 5)  # Hide from ip locker
         time.sleep(x)
         if db.existense(now_date) == False:
+            # 抓取資料
             try:
                 df1 = twscrawler(now_date)
                 df2 = tecrawler(now_date)
+                # 依日期儲存
                 db.savebydate(df1, df2, now_date)
                 i += 1
             except Exception as e:
@@ -65,6 +69,7 @@ def parse(n, **kwargs):
             print("exist " + now_date.strftime("%Y%m%d"))
             i += 1
         now_date -= datetime.timedelta(days=1)
+    # 依ID儲存
     db.savebyname(n)
 
 
